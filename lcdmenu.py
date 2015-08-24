@@ -50,19 +50,31 @@ class menuItem(object):
 
 
 class lcdMenu(object):
+    """
+    ALL METHODS IN THIS CLASS MUST ACCEPT THE NAME OF THE ITEM AND NOT
+        THE ITEM'S INSTANCE
+    """
 
     def __init__(self, itemname=None, itemtext=None):
         self.items = dict()
+        self.current_item = None
         if itemname is not None:
             self.items[itemname] = menuItem(itemname, itemtext)
             self.current_item = self.items[itemname]
 
-    def add_item(self, name, text=None, left=None, right=None,
-                 up=None, down=None):
+    def set_current_item(self, itemname):
+        self.current_item = self.items[itemname]
+
+    def check_current_item(self, itemname):
+        if self.current_item is None:
+            self.current_item = self.items[itemname]
+
+    def add_item(self, name, text=None):
         """
         adds a new item to the menu
         """
-        self.items[name] = menuItem(name, text, left, right, up, down)
+        self.items[name] = menuItem(name, text)
+        self.check_current_item(name)
 
     def create_left(self, name, leftname, text=None, up=None):
         """
@@ -116,13 +128,15 @@ class lcdMenu(object):
         if up is None:
             self.items[rname].set_up(l_item.get_up())
 
-    def add_up(self, uname, dname):
+    def add_up(self, dname, uname):
         """
         adds an existing item to another existing item's up
         """
         self.items[dname].set_up(self.items[uname])
+        if self.items[uname].get_down is None:
+            self.items[uname].set_down(self.items[dname])
 
-    def add_down(self, dname, uname, text=None):
+    def add_down(self, uname, dname, text=None):
         """ adds a new item to an existing item's down
         """
         self.items[dname] = menuItem(dname, text, up=self.items[uname])
@@ -140,8 +154,19 @@ class lcdMenu(object):
         # assert info not empty
         # create the items
         for item in items:
-            for name, text in item:
-                self.items[name] = menuItem(name, text)
+            name, text = item
+            self.items[name] = menuItem(name, text)
+        # set the up value for the first item
+        if up is not None:
+            self.link_items(items[0][0], up, dir='up')
+        # loop through again and add the links
+        for n, item in enumerate(items):
+            if n < len(items) - 1:
+                self.link_items(items[n][0], items[n+1][0])
+        # loop
+        if loop:
+            self.link_items(items[0][0], items[-1][0], dir='left')
+        self.check_current_item(items[0][0])
 
     '''
     def add_up_right(self, name, uname, traverse=True):
@@ -153,3 +178,22 @@ class lcdMenu(object):
         the traverse flag stops the fuction from traversing the linked list if
             the list is a loop
     '''
+
+    def move_left(self):
+        if self.current_item.get_left() is not None:
+            self.current_item = self.current_item.get_left()
+
+    def move_right(self):
+        if self.current_item.get_right() is not None:
+            self.current_item = self.current_item.get_right()
+
+    def move_up(self):
+        if self.current_item.get_up() is not None:
+            self.current_item = self.current_item.get_up()
+
+    def move_down(self):
+        if self.current_item.get_down() is not None:
+            self.current_item = self.current_item.get_down()
+
+    def get_text(self):
+        return self.current_item.get_text()
