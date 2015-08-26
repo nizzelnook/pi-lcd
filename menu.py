@@ -48,6 +48,12 @@ class menuItem(object):
     def set_text(self, newtext):
         self.text = newtext
 
+    def set_action(self, action):
+        self.action = action
+
+    def action(self, args, kwargs):
+        self.action(*args, **kwargs)
+
 
 class Menu(object):
     """
@@ -75,6 +81,18 @@ class Menu(object):
         """
         self.items[name] = menuItem(name, text)
         self.check_current_item(name)
+
+    def add_action(self, name, action):
+        """
+        adds an action to name's action property
+        """
+        self.items[name].set_action(action)
+
+    def do_action(self, name, args, kwargs):
+        """
+        does the action that name has
+        """
+        self.items[name].action(args, kwargs)
 
     def create_left(self, name, leftname, text=None, up=None):
         """

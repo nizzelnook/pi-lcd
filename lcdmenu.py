@@ -4,6 +4,12 @@ from menu import Menu
 import Adafruit_CharLCD as LCD
 import time
 
+
+def quit(lcd):
+    lcd.clear()
+    lcd.set_color(0, 0, 0)
+    exit()
+
 # some constants
 DEBOUNCE_TIME = .075
 
@@ -33,6 +39,7 @@ m.add_right_list(row2a, up='2')
 m.add_right_list(row3a, up='3')
 m.add_right_list(row1aa, up='1a')
 m.add_right_list(row1ba, up='1b')
+m.add_action('4', quit)
 
 # turn lcd on and clear, set message to current item
 lcd.clear()
@@ -59,7 +66,7 @@ while run:
         lcd.message(m.current_item.get_text())
     elif lcd.is_pressed(LCD.SELECT):
         if m.current_item.get_text() == 'exit':
-            run = False
+            m.current_item.action(lcd)
     time.sleep(DEBOUNCE_TIME)
 
 # turn display off
